@@ -11,6 +11,7 @@ cmds = [
 
 [phases.build]
 cmds = [
+  'rm -rf node_modules/.cache',
   'npm run build:web'
 ]
 
