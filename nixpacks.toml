@@ -11,9 +11,12 @@ cmds = [
 
 [phases.build]
 cmds = [
-  'rm -rf node_modules/.cache',
   'npm run build:web'
 ]
+
+[build]
+# Disable cache to avoid EBUSY errors
+cacheDirectories = []
 
 [start]
 cmd = 'npx serve dist -s -p $PORT'
