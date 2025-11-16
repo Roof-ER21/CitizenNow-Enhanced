@@ -1,0 +1,242 @@
+[
+  {
+    "id": "read001",
+    "sentence": "Abraham Lincoln was the President during the Civil War.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read002",
+    "sentence": "All people want to be free.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read003",
+    "sentence": "America is the land of freedom.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read004",
+    "sentence": "All United States citizens have the right to vote.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read005",
+    "sentence": "America is the home of the brave.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read006",
+    "sentence": "The American flag has stars and stripes.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read007",
+    "sentence": "The American flag has 13 stripes.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read008",
+    "sentence": "The capital of the United States is Washington, D.C.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read009",
+    "sentence": "Citizens have the right to vote.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read010",
+    "sentence": "Congress is part of the American government.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read011",
+    "sentence": "Congress makes the laws in the United States.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read012",
+    "sentence": "George Washington was the father of our country.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read013",
+    "sentence": "I want to be a citizen of the United States.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read014",
+    "sentence": "I want to be an American citizen.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read015",
+    "sentence": "I want to become an American so I can vote.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read016",
+    "sentence": "Many people come to America for freedom.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read017",
+    "sentence": "Many people have died for freedom.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read018",
+    "sentence": "Martha Washington was the first First Lady.",
+    "category": "civics",
+    "difficulty": "hard"
+  },
+  {
+    "id": "read019",
+    "sentence": "Memorial Day is in May.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read020",
+    "sentence": "People in America have the right to freedom.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read021",
+    "sentence": "The American flag is red, white, and blue.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read022",
+    "sentence": "The Bill of Rights was important.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read023",
+    "sentence": "The colors of the flag are red, white, and blue.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read024",
+    "sentence": "The Constitution is the supreme law of our land.",
+    "category": "civics",
+    "difficulty": "hard"
+  },
+  {
+    "id": "read025",
+    "sentence": "The flag of the United States has stars and stripes.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read026",
+    "sentence": "The President lives in the White House.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read027",
+    "sentence": "The President must be an American citizen.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read028",
+    "sentence": "The President is elected by the citizens.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read029",
+    "sentence": "The Statue of Liberty was a gift from France.",
+    "category": "civics",
+    "difficulty": "hard"
+  },
+  {
+    "id": "read030",
+    "sentence": "The United States flag is red, white, and blue.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read031",
+    "sentence": "The White House is in Washington, D.C.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read032",
+    "sentence": "Thanksgiving is in November.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read033",
+    "sentence": "United States citizens have the right to vote.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "read034",
+    "sentence": "Washington was the first President.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read035",
+    "sentence": "We have a flag.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read036",
+    "sentence": "Today is a sunny day.",
+    "category": "daily_life",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read037",
+    "sentence": "It is a nice day today.",
+    "category": "daily_life",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read038",
+    "sentence": "I like to study English.",
+    "category": "daily_life",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read039",
+    "sentence": "Today I go to school.",
+    "category": "daily_life",
+    "difficulty": "easy"
+  },
+  {
+    "id": "read040",
+    "sentence": "I live in the United States.",
+    "category": "daily_life",
+    "difficulty": "easy"
+  }
+]

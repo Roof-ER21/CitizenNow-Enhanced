@@ -1,0 +1,212 @@
+[
+  {
+    "id": "write001",
+    "sentence": "Adams was the second President.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "write002",
+    "sentence": "All people want to be free.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write003",
+    "sentence": "America is the land of freedom.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write004",
+    "sentence": "America is the land of the free.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write005",
+    "sentence": "Bill Clinton was the President.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "write006",
+    "sentence": "Citizens can vote.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write007",
+    "sentence": "Citizens have the right to vote.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write008",
+    "sentence": "Congress is part of the government.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "write009",
+    "sentence": "Congress makes laws.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write010",
+    "sentence": "George Washington was the first President.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "write011",
+    "sentence": "I want to be a citizen.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write012",
+    "sentence": "I want to be a citizen of the United States.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write013",
+    "sentence": "I want to become a citizen.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write014",
+    "sentence": "Many people come to the United States.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "write015",
+    "sentence": "People want to be free.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write016",
+    "sentence": "The American flag is red, white, and blue.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write017",
+    "sentence": "The American flag has stars and stripes.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write018",
+    "sentence": "The capital of the United States is Washington, D.C.",
+    "category": "civics",
+    "difficulty": "hard"
+  },
+  {
+    "id": "write019",
+    "sentence": "The flag is red, white, and blue.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write020",
+    "sentence": "The flag has stars and stripes.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write021",
+    "sentence": "The President lives in the White House.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write022",
+    "sentence": "The President must be a citizen.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "write023",
+    "sentence": "The President signs bills into law.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "write024",
+    "sentence": "The United States flag is red, white, and blue.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write025",
+    "sentence": "The White House is in Washington, D.C.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "write026",
+    "sentence": "United States citizens have the right to vote.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "write027",
+    "sentence": "Washington was the father of our country.",
+    "category": "civics",
+    "difficulty": "hard"
+  },
+  {
+    "id": "write028",
+    "sentence": "Washington was the first President.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write029",
+    "sentence": "We elect the President in November.",
+    "category": "civics",
+    "difficulty": "medium"
+  },
+  {
+    "id": "write030",
+    "sentence": "We have the right to freedom.",
+    "category": "civics",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write031",
+    "sentence": "Today is a sunny day.",
+    "category": "daily_life",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write032",
+    "sentence": "It is a nice day.",
+    "category": "daily_life",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write033",
+    "sentence": "I live in the United States.",
+    "category": "daily_life",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write034",
+    "sentence": "I want to learn English.",
+    "category": "daily_life",
+    "difficulty": "easy"
+  },
+  {
+    "id": "write035",
+    "sentence": "Today I go to school.",
+    "category": "daily_life",
+    "difficulty": "easy"
+  }
+]
