@@ -11,10 +11,17 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { interviewSimulator } from '../services/llmService';
-import { AIMessage, AIFeedback } from '../types';
+import { Ionicons } from '@expo/vector-icons';
+import { interviewSimulator, speechRecognition } from '../services/llmService';
+import { getVoiceGuidanceService, VoiceGuidanceService } from '../services/voiceGuidance';
+import { RealTimeCoach } from '../services/interviewCoaching';
+import { audioRecordingService } from '../services/audioRecordingService';
+import { InterviewSetupModal } from '../components/InterviewSetupModal';
+import { VoiceRecordingButton } from '../components/VoiceRecordingButton';
+import { AIMessage, AIFeedback, InterviewPreferences, InterviewCoachingInsight } from '../types';
 
 export default function AIInterviewScreen() {
+  // Existing state
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +34,17 @@ export default function AIInterviewScreen() {
   const [apiCallCount, setApiCallCount] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const API_LIMIT_FREE_TIER = 10; // Free tier limit for demo
+  // Voice interview state
+  const [showSetupModal, setShowSetupModal] = useState(false);
+  const [interviewPreferences, setInterviewPreferences] = useState<InterviewPreferences | null>(null);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [coachingInsights, setCoachingInsights] = useState<InterviewCoachingInsight[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const voiceGuidanceServiceRef = useRef<VoiceGuidanceService | null>(null);
+  const realTimeCoachRef = useRef<RealTimeCoach | null>(null);
+
+  const API_LIMIT_FREE_TIER = 10;
 
   useEffect(() => {
     if (scrollViewRef.current) {
@@ -35,20 +52,64 @@ export default function AIInterviewScreen() {
     }
   }, [messages]);
 
-  const handleStartInterview = async () => {
+  // Cleanup voice services on unmount
+  useEffect(() => {
+    return () => {
+      if (voiceGuidanceServiceRef.current) {
+        voiceGuidanceServiceRef.current.stop();
+      }
+    };
+  }, []);
+
+  const handleStartInterview = () => {
+    // Show setup modal instead of starting immediately
+    setShowSetupModal(true);
+  };
+
+  const handleInterviewSetupComplete = async (preferences: InterviewPreferences) => {
+    setInterviewPreferences(preferences);
+    setVoiceEnabled(preferences.voiceEnabled);
+    setShowSetupModal(false);
+
+    // Initialize voice guidance service if enabled
+    if (preferences.voiceEnabled && preferences.officerVoice) {
+      voiceGuidanceServiceRef.current = getVoiceGuidanceService({
+        enabled: true,
+        gender: preferences.officerVoice.gender,
+        rate: preferences.officerVoice.rate,
+        autoPlay: preferences.autoSpeakQuestions,
+      });
+    }
+
+    // Initialize real-time coach if realtime mode
+    if (preferences.coachingMode === 'realtime') {
+      realTimeCoachRef.current = new RealTimeCoach();
+    }
+
+    // Start the actual interview
+    await startActualInterview();
+  };
+
+  const startActualInterview = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const greeting = await interviewSimulator.startInterview();
-      setMessages([
-        {
-          role: 'assistant',
-          content: greeting,
-          timestamp: new Date(),
-        },
-      ]);
+      const greetingMessage: AIMessage = {
+        role: 'assistant',
+        content: greeting,
+        timestamp: new Date(),
+      };
+      setMessages([greetingMessage]);
       setInterviewStarted(true);
       setIsDemoMode(interviewSimulator.isDemoSession());
+
+      // Auto-speak greeting if voice enabled
+      if (voiceEnabled && voiceGuidanceServiceRef.current) {
+        setIsSpeaking(true);
+        await voiceGuidanceServiceRef.current.speakQuestion(greeting);
+        setIsSpeaking(false);
+      }
     } catch (err) {
       setError('Failed to start interview. Please check your API key and try again.');
       console.error('Start interview error:', err);
@@ -57,15 +118,15 @@ export default function AIInterviewScreen() {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputText.trim() || isLoading) return;
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputText.trim();
+    if (!textToSend || isLoading) return;
 
     if (apiCallCount >= API_LIMIT_FREE_TIER) {
       setError(`Free tier limit reached (${API_LIMIT_FREE_TIER} API calls). Please upgrade for unlimited access.`);
       return;
     }
 
-    const userMessage = inputText.trim();
     setInputText('');
     setIsLoading(true);
     setError(null);
@@ -73,13 +134,21 @@ export default function AIInterviewScreen() {
     // Add user message to UI immediately
     const newUserMessage: AIMessage = {
       role: 'user',
-      content: userMessage,
+      content: textToSend,
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, newUserMessage]);
 
+    // Real-time coaching analysis
+    if (interviewPreferences?.coachingMode === 'realtime' && realTimeCoachRef.current) {
+      const insights = realTimeCoachRef.current.analyzeResponse(textToSend);
+      if (insights.length > 0) {
+        setCoachingInsights((prev) => [...prev, ...insights]);
+      }
+    }
+
     try {
-      const response = await interviewSimulator.sendMessage(userMessage);
+      const response = await interviewSimulator.sendMessage(textToSend);
       const assistantMessage: AIMessage = {
         role: 'assistant',
         content: response,
@@ -87,12 +156,51 @@ export default function AIInterviewScreen() {
       };
       setMessages((prev) => [...prev, assistantMessage]);
       setApiCallCount((prev) => prev + 1);
+
+      // Auto-speak officer response if voice enabled
+      if (voiceEnabled && voiceGuidanceServiceRef.current) {
+        setIsSpeaking(true);
+        await voiceGuidanceServiceRef.current.speakQuestion(response);
+        setIsSpeaking(false);
+      }
     } catch (err) {
       setError('Failed to send message. Please try again.');
       console.error('Send message error:', err);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleVoiceRecording = async (uri: string, durationMs: number) => {
+    setIsLoading(true);
+    setIsRecording(false);
+    try {
+      // Convert audio URI to blob
+      const audioBlob = await audioRecordingService.recordingToBlob(uri);
+
+      // Transcribe using Whisper
+      const transcribedText = await speechRecognition.transcribe(audioBlob);
+
+      if (transcribedText) {
+        // Send transcribed text as message
+        await handleSendMessage(transcribedText);
+      } else {
+        setError('Could not transcribe audio. Please try again.');
+      }
+    } catch (err) {
+      console.error('Voice recording error:', err);
+      setError('Failed to process voice recording. Please try typing instead.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRecordingStart = () => {
+    setIsRecording(true);
+  };
+
+  const handleRecordingCancel = () => {
+    setIsRecording(false);
   };
 
   const handleEndInterview = async () => {
@@ -120,6 +228,13 @@ export default function AIInterviewScreen() {
     setFeedback(null);
     setShowFeedbackModal(false);
     setError(null);
+    setCoachingInsights([]);
+    setVoiceEnabled(false);
+    setInterviewPreferences(null);
+    if (voiceGuidanceServiceRef.current) {
+      voiceGuidanceServiceRef.current.stop();
+      voiceGuidanceServiceRef.current = null;
+    }
   };
 
   const renderMessage = (message: AIMessage, index: number) => {
@@ -197,6 +312,17 @@ export default function AIInterviewScreen() {
                 <Text style={styles.detailedFeedback}>{feedback.detailedFeedback}</Text>
               </View>
 
+              {interviewPreferences?.coachingMode === 'minimal' && coachingInsights.length > 0 && (
+                <View style={styles.feedbackSection}>
+                  <Text style={styles.feedbackSectionTitle}>Speaking Analysis</Text>
+                  {coachingInsights.slice(0, 5).map((insight, idx) => (
+                    <Text key={idx} style={styles.feedbackItem}>
+                      • {insight.message}
+                    </Text>
+                  ))}
+                </View>
+              )}
+
               <TouchableOpacity style={styles.closeButton} onPress={() => setShowFeedbackModal(false)}>
                 <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
@@ -224,6 +350,7 @@ export default function AIInterviewScreen() {
             <Text style={styles.headerTitle}>AI Interview Simulator</Text>
             <Text style={styles.headerSubtitle}>
               Practice with a realistic USCIS officer simulation
+              {voiceEnabled && ' • Voice Enabled'}
             </Text>
           </View>
           {isDemoMode && (
@@ -270,7 +397,10 @@ export default function AIInterviewScreen() {
             {isLoading ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.startButtonText}>Start Interview</Text>
+              <>
+                <Ionicons name="play" size={20} color="white" style={{ marginRight: 8 }} />
+                <Text style={styles.startButtonText}>Start Interview</Text>
+              </>
             )}
           </TouchableOpacity>
         </View>
@@ -289,28 +419,105 @@ export default function AIInterviewScreen() {
                 <Text style={styles.loadingText}>Officer is responding...</Text>
               </View>
             )}
+            {/* Real-time Coaching Insights */}
+            {interviewPreferences?.coachingMode === 'realtime' && coachingInsights.length > 0 && (
+              <View style={styles.coachingPanel}>
+                <View style={styles.coachingHeader}>
+                  <Ionicons name="school" size={16} color="#10B981" />
+                  <Text style={styles.coachingTitle}>Coaching Tips</Text>
+                </View>
+                {coachingInsights.slice(-3).map((insight, idx) => (
+                  <View key={idx} style={[
+                    styles.coachingInsight,
+                    insight.type === 'positive' && styles.coachingPositive,
+                    insight.type === 'warning' && styles.coachingWarning,
+                    insight.type === 'critical' && styles.coachingCritical,
+                  ]}>
+                    <Ionicons
+                      name={
+                        insight.type === 'positive' ? 'checkmark-circle' :
+                        insight.type === 'warning' ? 'alert-circle' :
+                        insight.type === 'critical' ? 'close-circle' : 'information-circle'
+                      }
+                      size={14}
+                      color={
+                        insight.type === 'positive' ? '#10B981' :
+                        insight.type === 'warning' ? '#F59E0B' :
+                        insight.type === 'critical' ? '#EF4444' : '#3B82F6'
+                      }
+                    />
+                    <Text style={styles.coachingText}>{insight.message}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </ScrollView>
 
           {/* Input Area */}
           {!interviewEnded && (
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Type your response..."
-                placeholderTextColor="#9CA3AF"
-                value={inputText}
-                onChangeText={setInputText}
-                multiline
-                maxLength={500}
-                editable={!isLoading}
-              />
-              <TouchableOpacity
-                style={[styles.sendButton, (!inputText.trim() || isLoading) && styles.buttonDisabled]}
-                onPress={handleSendMessage}
-                disabled={!inputText.trim() || isLoading}
-              >
-                <Text style={styles.sendButtonText}>Send</Text>
-              </TouchableOpacity>
+            <View style={styles.inputSection}>
+              {/* Voice/Text Mode Toggle */}
+              {voiceEnabled && (
+                <View style={styles.inputModeToggle}>
+                  <TouchableOpacity
+                    onPress={() => setInterviewPreferences(prev => prev ? {...prev, preferVoiceInput: false} : null)}
+                    style={[styles.toggleButton, !interviewPreferences?.preferVoiceInput && styles.toggleButtonActive]}
+                  >
+                    <Ionicons name="text" size={20} color={interviewPreferences?.preferVoiceInput ? '#9CA3AF' : '#3B82F6'} />
+                    <Text style={[styles.toggleText, !interviewPreferences?.preferVoiceInput && styles.toggleTextActive]}>
+                      Text
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setInterviewPreferences(prev => prev ? {...prev, preferVoiceInput: true} : null)}
+                    style={[styles.toggleButton, interviewPreferences?.preferVoiceInput && styles.toggleButtonActive]}
+                  >
+                    <Ionicons name="mic" size={20} color={interviewPreferences?.preferVoiceInput ? '#3B82F6' : '#9CA3AF'} />
+                    <Text style={[styles.toggleText, interviewPreferences?.preferVoiceInput && styles.toggleTextActive]}>
+                      Voice
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Input Controls */}
+              {voiceEnabled && interviewPreferences?.preferVoiceInput ? (
+                <View style={styles.voiceInputContainer}>
+                  <VoiceRecordingButton
+                    onRecordingComplete={handleVoiceRecording}
+                    onRecordingStart={handleRecordingStart}
+                    onRecordingCancel={handleRecordingCancel}
+                    maxDurationMs={30000}
+                    disabled={isLoading || isSpeaking}
+                    size="large"
+                  />
+                  {isSpeaking && (
+                    <Text style={styles.speakingIndicator}>
+                      🔊 Officer is speaking...
+                    </Text>
+                  )}
+                </View>
+              ) : (
+                <View style={styles.textInputContainer}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Type your response..."
+                    placeholderTextColor="#9CA3AF"
+                    value={inputText}
+                    onChangeText={setInputText}
+                    multiline
+                    maxLength={500}
+                    editable={!isLoading && !isSpeaking}
+                  />
+                  <TouchableOpacity
+                    style={[styles.sendButton, (!inputText.trim() || isLoading || isSpeaking) && styles.buttonDisabled]}
+                    onPress={() => handleSendMessage()}
+                    disabled={!inputText.trim() || isLoading || isSpeaking}
+                  >
+                    <Ionicons name="send" size={20} color="white" />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           )}
 
@@ -334,6 +541,14 @@ export default function AIInterviewScreen() {
 
       {/* Feedback Modal */}
       {renderFeedbackModal()}
+
+      {/* Interview Setup Modal */}
+      <InterviewSetupModal
+        visible={showSetupModal}
+        onClose={() => setShowSetupModal(false)}
+        onStart={handleInterviewSetupComplete}
+        defaultPreferences={interviewPreferences || undefined}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -434,8 +649,13 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 24,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    flexDirection: 'row',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 3,
   },
   startButtonText: {
@@ -464,7 +684,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     alignSelf: 'flex-start',
     borderBottomLeftRadius: 4,
-    boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
     elevation: 1,
   },
   messageLabel: {
@@ -494,12 +717,57 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 14,
   },
-  inputContainer: {
-    flexDirection: 'row',
-    padding: 12,
-    backgroundColor: '#FFF',
+  inputSection: {
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
+    backgroundColor: 'white',
+    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
+  },
+  inputModeToggle: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    gap: 8,
+  },
+  toggleButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+    gap: 6,
+  },
+  toggleButtonActive: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 2,
+    borderColor: '#3B82F6',
+  },
+  toggleText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  toggleTextActive: {
+    color: '#1F2937',
+    fontWeight: '600',
+  },
+  voiceInputContainer: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  speakingIndicator: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280',
+    fontStyle: 'italic',
+  },
+  textInputContainer: {
+    flexDirection: 'row',
+    padding: 12,
+    gap: 8,
     alignItems: 'flex-end',
   },
   input: {
@@ -510,19 +778,58 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 15,
     maxHeight: 100,
-    marginRight: 8,
   },
   sendButton: {
     backgroundColor: '#1E40AF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  sendButtonText: {
-    color: '#FFF',
-    fontSize: 15,
+  coachingPanel: {
+    backgroundColor: '#F0F9FF',
+    borderLeftWidth: 4,
+    borderLeftColor: '#10B981',
+    padding: 12,
+    marginHorizontal: 12,
+    marginBottom: 12,
+    borderRadius: 8,
+  },
+  coachingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 6,
+  },
+  coachingTitle: {
+    fontSize: 14,
     fontWeight: '600',
+    color: '#10B981',
+  },
+  coachingInsight: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    gap: 6,
+  },
+  coachingPositive: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  coachingWarning: {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+  },
+  coachingCritical: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  coachingText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#4B5563',
+    lineHeight: 18,
   },
   actionButtons: {
     padding: 12,
