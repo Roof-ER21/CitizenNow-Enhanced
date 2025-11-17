@@ -91,14 +91,7 @@ class PinAuthService {
         return null; // Incorrect PIN
       }
 
-      // PIN is correct, restore Firebase session
-      const anonymousUid = await AsyncStorage.getItem(ANONYMOUS_UID_KEY);
-      if (anonymousUid && !auth.currentUser) {
-        // Sign in anonymously to restore session
-        await signInAnonymously(auth);
-      }
-
-      // Return user data
+      // PIN is correct, return user data
       return await this.getUserData();
     } catch (error) {
       console.error('Error verifying PIN:', error);
@@ -136,15 +129,6 @@ class PinAuthService {
 
       const updatedData = { ...currentData, ...updates };
       await AsyncStorage.setItem(USER_KEY, JSON.stringify(updatedData));
-
-      // Sync to Firestore if authenticated
-      if (auth.currentUser) {
-        await setDoc(
-          doc(db, 'users', currentData.userId),
-          updates,
-          { merge: true }
-        );
-      }
     } catch (error) {
       console.error('Error updating user data:', error);
       throw error;
@@ -154,8 +138,8 @@ class PinAuthService {
   // Sign out (clear local session but keep data for re-login)
   async signOut(): Promise<void> {
     try {
-      await auth.signOut();
       // Note: We don't clear PIN_KEY or USER_KEY - user can log back in with PIN
+      console.log('User signed out (data retained for re-login)');
     } catch (error) {
       console.error('Error signing out:', error);
       throw error;
@@ -165,16 +149,9 @@ class PinAuthService {
   // Delete account completely
   async deleteAccount(): Promise<void> {
     try {
-      // Delete from Firestore
-      const userData = await this.getUserData();
-      if (userData && auth.currentUser) {
-        await auth.currentUser.delete();
-      }
-
       // Clear all local data
-      await AsyncStorage.multiRemove([PIN_KEY, USER_KEY, ANONYMOUS_UID_KEY]);
-
-      await auth.signOut();
+      await AsyncStorage.multiRemove([PIN_KEY, USER_KEY]);
+      console.log('Account deleted successfully');
     } catch (error) {
       console.error('Error deleting account:', error);
       throw error;
