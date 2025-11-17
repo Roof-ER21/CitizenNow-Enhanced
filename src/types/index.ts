@@ -234,6 +234,24 @@ export interface InterviewSessionConfig {
   voiceEnabled?: boolean;
   showHints?: boolean;
   showScore?: boolean;
+  coachingMode?: 'realtime' | 'minimal';
+  officerVoice?: VoiceProfile;
+}
+
+// Voice Interview Types
+export interface VoiceProfile {
+  gender: 'male' | 'female';
+  rate: 'slow' | 'normal' | 'fast';
+  pitch?: number;
+  profileName?: 'professional_female' | 'professional_male' | 'friendly_female' | 'friendly_male' | 'senior_female' | 'senior_male';
+}
+
+export interface InterviewPreferences {
+  voiceEnabled: boolean;
+  coachingMode: 'realtime' | 'minimal';
+  officerVoice: VoiceProfile;
+  autoSpeakQuestions: boolean;
+  preferVoiceInput: boolean;
 }
 
 export interface InterviewState {
