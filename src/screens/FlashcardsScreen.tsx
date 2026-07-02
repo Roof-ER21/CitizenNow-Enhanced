@@ -11,7 +11,6 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import { CivicsQuestion } from '../types';
 import civicsQuestions from '../data/civicsQuestions.json';
